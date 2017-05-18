@@ -17,28 +17,25 @@
  */
 package se.kth.app;
 
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.kth.croupier.util.CroupierHelper;
 import se.kth.app.test.Ping;
 import se.kth.app.test.Pong;
-import se.sics.kompics.ClassMatchedHandler;
-import se.sics.kompics.ComponentDefinition;
-import se.sics.kompics.Handler;
-import se.sics.kompics.Positive;
-import se.sics.kompics.Start;
+import se.kth.app.test.TestMsg;
+import se.kth.broadcast.Broadcast;
+import se.kth.broadcast.CausalOrderReliableBroadcastPort;
+import se.kth.broadcast.Deliver;
+import se.kth.sets.Add;
+import se.kth.sets.GSet;
+import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
-import se.sics.kompics.network.Transport;
 import se.sics.kompics.timer.Timer;
-import se.sics.ktoolbox.croupier.CroupierPort;
-import se.sics.ktoolbox.croupier.event.CroupierSample;
 import se.sics.ktoolbox.util.identifiable.Identifier;
 import se.sics.ktoolbox.util.network.KAddress;
 import se.sics.ktoolbox.util.network.KContentMsg;
 import se.sics.ktoolbox.util.network.KHeader;
-import se.sics.ktoolbox.util.network.basic.BasicContentMsg;
-import se.sics.ktoolbox.util.network.basic.BasicHeader;
+
+import java.util.Set;
 
 /**
  * @author Alex Ormenisan <aaor@kth.se>
@@ -47,23 +44,27 @@ public class AppComp extends ComponentDefinition {
 
   private static final Logger LOG = LoggerFactory.getLogger(AppComp.class);
   private String logPrefix = " ";
+  private Set set;
 
   //*******************************CONNECTIONS********************************
-  Positive<Timer> timerPort = requires(Timer.class);
-  Positive<Network> networkPort = requires(Network.class);
-  Positive<CroupierPort> croupierPort = requires(CroupierPort.class);
+  Positive<Timer> timer = requires(Timer.class);
+  Positive<Network> net = requires(Network.class);
+  Positive<CausalOrderReliableBroadcastPort> corb = requires(CausalOrderReliableBroadcastPort.class);
   //**************************************************************************
   private KAddress selfAdr;
 
   public AppComp(Init init) {
     selfAdr = init.selfAdr;
+    set = new GSet();
     logPrefix = "<nid:" + selfAdr.getId() + ">";
     LOG.info("{}initiating...", logPrefix);
 
     subscribe(handleStart, control);
-    subscribe(handleCroupierSample, croupierPort);
-    subscribe(handlePing, networkPort);
-    subscribe(handlePong, networkPort);
+    subscribe(handlePing, net);
+    subscribe(handlePong, net);
+    subscribe(handleCRBDeliver, corb);
+    subscribe(handleTestMsg, net);
+    //subscribe(handleAddOperation, net);
   }
 
   Handler handleStart = new Handler<Start>() {
@@ -73,18 +74,21 @@ public class AppComp extends ComponentDefinition {
     }
   };
 
-  Handler handleCroupierSample = new Handler<CroupierSample>() {
+  ClassMatchedHandler handleTestMsg = new ClassMatchedHandler<TestMsg, KContentMsg<?, KHeader<?>, TestMsg>>() {
+
     @Override
-    public void handle(CroupierSample croupierSample) {
-      if (croupierSample.publicSample.isEmpty()) {
-        return;
-      }
-      List<KAddress> sample = CroupierHelper.getSample(croupierSample);
-      for (KAddress peer : sample) {
-        KHeader header = new BasicHeader(selfAdr, peer, Transport.UDP);
-        KContentMsg msg = new BasicContentMsg(header, new Ping());
-        trigger(msg, networkPort);
-      }
+    public void handle(TestMsg msg, KContentMsg<?, KHeader<?>, TestMsg> container) {
+        LOG.debug("{}received TestMsg from {}, issuing broadcast", logPrefix, container.getHeader().getSource());
+        trigger(new Broadcast(msg), corb);
+    }
+  };
+
+
+
+  Handler handleCRBDeliver = new Handler<Deliver>() {
+    @Override
+    public void handle(Deliver deliver) {
+      LOG.debug("{} received {} from {}", logPrefix, deliver.payload, deliver.src);
     }
   };
 
@@ -93,8 +97,8 @@ public class AppComp extends ComponentDefinition {
 
       @Override
       public void handle(Ping content, KContentMsg<?, ?, Ping> container) {
-        LOG.info("{}received ping from:{}", logPrefix, container.getHeader().getSource());
-        trigger(container.answer(new Pong()), networkPort);
+        LOG.debug("{}received ping from:{}", logPrefix, container.getHeader().getSource());
+        trigger(container.answer(new Pong()), net);
       }
     };
 
@@ -103,7 +107,7 @@ public class AppComp extends ComponentDefinition {
 
       @Override
       public void handle(Pong content, KContentMsg<?, KHeader<?>, Pong> container) {
-        LOG.info("{}received pong from:{}", logPrefix, container.getHeader().getSource());
+        LOG.debug("{}received pong from:{}", logPrefix, container.getHeader().getSource());
       }
     };
 
