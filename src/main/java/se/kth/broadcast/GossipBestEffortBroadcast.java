@@ -1,5 +1,6 @@
 package se.kth.broadcast;
 
+import org.apache.commons.math3.filter.KalmanFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.kth.croupier.util.CroupierHelper;
@@ -22,8 +23,10 @@ import se.sics.ktoolbox.util.network.basic.BasicHeader;
 
 class BEB_Broadcast extends Broadcast {
 
-    public BEB_Broadcast(KompicsEvent payload){
+    public KAddress src;
+    public BEB_Broadcast(KompicsEvent payload, KAddress src){
         super(payload);
+        this.src = src;
     }
 }
 
@@ -59,7 +62,7 @@ public class GossipBestEffortBroadcast extends ComponentDefinition {
     Handler<BEB_Broadcast> broadcastHandler = new Handler<BEB_Broadcast>() {
         @Override
         public void handle(BEB_Broadcast broadcast) {
-            past.add(new BEB_Deliver(selfAdr, broadcast.payload));
+            past.add(new BEB_Deliver(broadcast.src, broadcast.payload));
             //LOG.info("GBEB on {} Received a broadcast request", selfAdr);
         }
     };

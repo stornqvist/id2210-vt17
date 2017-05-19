@@ -49,7 +49,7 @@ public class EagerReliableBroadcast extends ComponentDefinition {
     Handler<RB_Broadcast> broadcastHandler = new Handler<RB_Broadcast>() {
         @Override
         public void handle(RB_Broadcast broadcast) {
-            trigger(new BEB_Broadcast(broadcast), beb);
+            trigger(new BEB_Broadcast(broadcast, selfAdr), beb);
             //LOG.info("RB at {} Received broadcast request", selfAdr);
         }
     };
@@ -64,9 +64,9 @@ public class EagerReliableBroadcast extends ComponentDefinition {
                     System.out.println("About to cast falsely");
                 }
                 RB_Broadcast broadcast = (RB_Broadcast) deliver.payload;
-                trigger(new RB_Deliver(deliver.src, deliver.payload, broadcast.past), rb);
+                trigger(new RB_Deliver(deliver.src, broadcast.payload, broadcast.past), rb);
                 //LOG.info("{} is delivering message upwards (and broadcasting again)", selfAdr);
-                trigger(new BEB_Broadcast(deliver.payload), beb);
+                trigger(new BEB_Broadcast(deliver.payload, deliver.src), beb);
             }
         }
     };
