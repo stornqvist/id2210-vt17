@@ -30,7 +30,7 @@ import se.sics.ktoolbox.util.identifiable.overlay.OverlayRegistry;
  * @author Alex Ormenisan <aaor@kth.se>
  */
 public class SystemSetup {
-   public static OverlayId setup() {
+  public static OverlayId setup() {
     BasicIdentifiers.registerDefaults2(scenarioSeed);
     OverlayRegistry.initiate(new OverlayId.BasicTypeFactory((byte) 0), new OverlayId.BasicTypeComparator());
     byte croupierOwnerId = 1;
@@ -38,7 +38,7 @@ public class SystemSetup {
 
     IdentifierFactory croupierBaseIdFactory = IdentifierRegistry.lookup(BasicIdentifiers.Values.OVERLAY.toString());
     OverlayIdFactory croupierIdFactory = new OverlayIdFactory(croupierBaseIdFactory, OverlayId.BasicTypes.CROUPIER,
-      croupierOwnerId);
+            croupierOwnerId);
     return croupierIdFactory.id(new BasicBuilders.StringBuilder("0"));
   }
 }

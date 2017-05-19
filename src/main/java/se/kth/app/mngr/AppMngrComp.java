@@ -110,18 +110,18 @@ public class AppMngrComp extends ComponentDefinition {
   }
 
   private void connectBroadcastComps() {
-      gbebComp = create(GossipBestEffortBroadcast.class, new GossipBestEffortBroadcast.Init(selfAdr));
-      erbComp = create(EagerReliableBroadcast.class, new EagerReliableBroadcast.Init(selfAdr));
-      corbComp = create(CausalOrderReliableBroadcast.class, new CausalOrderReliableBroadcast.Init(selfAdr));
+    gbebComp = create(GossipBestEffortBroadcast.class, new GossipBestEffortBroadcast.Init(selfAdr));
+    erbComp = create(EagerReliableBroadcast.class, new EagerReliableBroadcast.Init(selfAdr));
+    corbComp = create(CausalOrderReliableBroadcast.class, new CausalOrderReliableBroadcast.Init(selfAdr));
 
-      connect(gbebComp.getNegative(Network.class), extPorts.networkPort, Channel.TWO_WAY);
-      connect(gbebComp.getNegative(CroupierPort.class), extPorts.croupierPort, Channel.TWO_WAY);
+    connect(gbebComp.getNegative(Network.class), extPorts.networkPort, Channel.TWO_WAY);
+    connect(gbebComp.getNegative(CroupierPort.class), extPorts.croupierPort, Channel.TWO_WAY);
 
-      connect(erbComp.getNegative(BestEffortBroadcastPort.class), gbebComp.getPositive(BestEffortBroadcastPort.class), Channel.TWO_WAY);
+    connect(erbComp.getNegative(BestEffortBroadcastPort.class), gbebComp.getPositive(BestEffortBroadcastPort.class), Channel.TWO_WAY);
 
-      connect(corbComp.getNegative(ReliableBroadcastPort.class), erbComp.getPositive(ReliableBroadcastPort.class), Channel.TWO_WAY);
+    connect(corbComp.getNegative(ReliableBroadcastPort.class), erbComp.getPositive(ReliableBroadcastPort.class), Channel.TWO_WAY);
 
-      connect(appComp.getNegative(CausalOrderReliableBroadcastPort.class), corbComp.getPositive(CausalOrderReliableBroadcastPort.class), Channel.TWO_WAY);
+    connect(appComp.getNegative(CausalOrderReliableBroadcastPort.class), corbComp.getPositive(CausalOrderReliableBroadcastPort.class), Channel.TWO_WAY);
   }
 
   public static class Init extends se.sics.kompics.Init<AppMngrComp> {
@@ -145,7 +145,7 @@ public class AppMngrComp extends ComponentDefinition {
     public final Negative<OverlayViewUpdatePort> viewUpdatePort;
 
     public ExtPort(Positive<Timer> timerPort, Positive<Network> networkPort, Positive<CroupierPort> croupierPort,
-      Negative<OverlayViewUpdatePort> viewUpdatePort) {
+                   Negative<OverlayViewUpdatePort> viewUpdatePort) {
       this.networkPort = networkPort;
       this.timerPort = timerPort;
       this.croupierPort = croupierPort;

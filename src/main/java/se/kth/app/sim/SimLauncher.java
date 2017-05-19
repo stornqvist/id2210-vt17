@@ -24,12 +24,12 @@ import se.sics.kompics.simulator.run.LauncherComp;
  * @author Alex Ormenisan <aaor@kth.se>
  */
 public class SimLauncher {
-    public static void main(String[] args) {
-        SimulationScenario.setSeed(ScenarioSetup.scenarioSeed);
-        SimulationScenario simpleBootScenario = ScenarioGen.simpleSim();
-        simpleBootScenario.simulate(LauncherComp.class);
+  public static void main(String[] args) {
+    SimulationScenario.setSeed(ScenarioSetup.scenarioSeed);
+    SimulationScenario simpleBootScenario = ScenarioGen.simpleSim();
+    simpleBootScenario.simulate(LauncherComp.class);
 
-        SimulationScenario simpleKillScenario = ScenarioGen.simpleKillScenario();
-        simpleKillScenario.simulate(LauncherComp.class);
-    }
+    SimulationScenario simpleKillScenario = ScenarioGen.simpleKillScenario();
+    simpleKillScenario.simulate(LauncherComp.class);
+  }
 }

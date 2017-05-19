@@ -42,231 +42,231 @@ import se.sics.ktoolbox.util.network.KAddress;
  */
 public class ScenarioGen {
 
-    static Logger LOG = LoggerFactory.getLogger(ScenarioGen.class);
+  static Logger LOG = LoggerFactory.getLogger(ScenarioGen.class);
 
-    static Operation<SetupEvent> systemSetupOp = new Operation<SetupEvent>() {
+  static Operation<SetupEvent> systemSetupOp = new Operation<SetupEvent>() {
+    @Override
+    public SetupEvent generate() {
+      return new SetupEvent() {
         @Override
-        public SetupEvent generate() {
-            return new SetupEvent() {
-                @Override
-                public IdentifierExtractor getIdentifierExtractor() {
-                    return new SimNodeIdExtractor();
-                }
-            };
+        public IdentifierExtractor getIdentifierExtractor() {
+          return new SimNodeIdExtractor();
         }
-    };
+      };
+    }
+  };
 
-    static Operation<StartNodeEvent> startBootstrapServerOp = new Operation<StartNodeEvent>() {
+  static Operation<StartNodeEvent> startBootstrapServerOp = new Operation<StartNodeEvent>() {
 
-        @Override
-        public StartNodeEvent generate() {
-            return new StartNodeEvent() {
-                KAddress selfAdr;
+    @Override
+    public StartNodeEvent generate() {
+      return new StartNodeEvent() {
+        KAddress selfAdr;
 
-                {
-                    selfAdr = ScenarioSetup.bootstrapServer;
-                }
-
-                @Override
-                public Address getNodeAddress() {
-                    return selfAdr;
-                }
-
-                @Override
-                public Class getComponentDefinition() {
-                    return BootstrapServerComp.class;
-                }
-
-                @Override
-                public BootstrapServerComp.Init getComponentInit() {
-                    return new BootstrapServerComp.Init(selfAdr);
-                }
-            };
+        {
+          selfAdr = ScenarioSetup.bootstrapServer;
         }
-    };
-
-    static Operation1<StartNodeEvent, Integer> startNodeOp = new Operation1<StartNodeEvent, Integer>() {
 
         @Override
-        public StartNodeEvent generate(final Integer nodeId) {
-            return new StartNodeEvent() {
-                KAddress selfAdr;
-
-                {
-                    String nodeIp = "193.0.0." + nodeId;
-                    selfAdr = ScenarioSetup.getNodeAdr(nodeIp, nodeId);
-                }
-
-                @Override
-                public Address getNodeAddress() {
-                    return selfAdr;
-                }
-
-                @Override
-                public Class getComponentDefinition() {
-                    return HostMngrComp.class;
-                }
-
-                @Override
-                public HostMngrComp.Init getComponentInit() {
-                    return new HostMngrComp.Init(selfAdr, ScenarioSetup.bootstrapServer, ScenarioSetup.croupierOId);
-                }
-
-                @Override
-                public Map<String, Object> initConfigUpdate() {
-                    Map<String, Object> nodeConfig = new HashMap<>();
-                    nodeConfig.put("system.id", nodeId);
-                    nodeConfig.put("system.seed", ScenarioSetup.getNodeSeed(nodeId));
-                    nodeConfig.put("system.port", ScenarioSetup.appPort);
-                    return nodeConfig;
-                }
-            };
+        public Address getNodeAddress() {
+          return selfAdr;
         }
-    };
-
-    static Operation1<KillNodeEvent, Integer> killNodeOp = new Operation1<KillNodeEvent, Integer>() {
 
         @Override
-        public KillNodeEvent generate(final Integer nodeId) {
-            return new KillNodeEvent() {
-                KAddress selfAdr;
-
-                {
-                    String nodeIp = "193.0.0." + nodeId;
-                    selfAdr = ScenarioSetup.getNodeAdr(nodeIp, nodeId);
-                    LOG.info("Node {} was killed", nodeId);
-                }
-
-                @Override
-                public Address getNodeAddress() {
-                    return selfAdr;
-                }
-            };
+        public Class getComponentDefinition() {
+          return BootstrapServerComp.class;
         }
-    };
-
-    static Operation1<StartNodeEvent, Integer> startSimClientOp = new Operation1<StartNodeEvent, Integer>() {
 
         @Override
-        public StartNodeEvent generate(final Integer nodeId) {
-            return new StartNodeEvent() {
-                KAddress selfAdr;
-
-                {
-                    String nodeIp = "193.0.1." + nodeId;
-                    selfAdr = ScenarioSetup.getNodeAdr(nodeIp, nodeId);
-                }
-
-                @Override
-                public Address getNodeAddress() {
-                    return selfAdr;
-                }
-
-                @Override
-                public Class getComponentDefinition() {
-                    return SimClient.class;
-                }
-
-                @Override
-                public SimClient.Init getComponentInit() {
-                    return new SimClient.Init(selfAdr);
-                    //return new HostMngrComp.Init(selfAdr, ScenarioSetup.bootstrapServer, ScenarioSetup.croupierOId);
-                }
-
-                @Override
-                public Map<String, Object> initConfigUpdate() {
-                    Map<String, Object> nodeConfig = new HashMap<>();
-                    nodeConfig.put("system.id", nodeId);
-                    nodeConfig.put("system.seed", ScenarioSetup.getNodeSeed(nodeId));
-                    nodeConfig.put("system.port", ScenarioSetup.appPort);
-                    return nodeConfig;
-                }
-            };
+        public BootstrapServerComp.Init getComponentInit() {
+          return new BootstrapServerComp.Init(selfAdr);
         }
-    };
+      };
+    }
+  };
 
-    public static SimulationScenario simpleSim() {
-        SimulationScenario scen = new SimulationScenario() {
-            {
-                StochasticProcess systemSetup = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(1000));
-                        raise(1, systemSetupOp);
-                    }
-                };
-                StochasticProcess startBootstrapServer = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(1000));
-                        raise(1, startBootstrapServerOp);
-                    }
-                };
-                StochasticProcess startPeers = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(uniform(1000, 1100));
-                        raise(10, startNodeOp, new BasicIntSequentialDistribution(1));
-                    }
-                };
-                StochasticProcess startSimClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(uniform(1000, 1100));
-                        raise(1, startSimClientOp, new BasicIntSequentialDistribution(1));
-                    }
-                };
+  static Operation1<StartNodeEvent, Integer> startNodeOp = new Operation1<StartNodeEvent, Integer>() {
 
-                systemSetup.start();
-                startBootstrapServer.startAfterTerminationOf(1000, systemSetup);
-                startPeers.startAfterTerminationOf(1000, startBootstrapServer);
-                startSimClient.startAfterTerminationOf(10, startPeers);
-                terminateAfterTerminationOf(5000, startSimClient);
-            }
+    @Override
+    public StartNodeEvent generate(final Integer nodeId) {
+      return new StartNodeEvent() {
+        KAddress selfAdr;
+
+        {
+          String nodeIp = "193.0.0." + nodeId;
+          selfAdr = ScenarioSetup.getNodeAdr(nodeIp, nodeId);
+        }
+
+        @Override
+        public Address getNodeAddress() {
+          return selfAdr;
+        }
+
+        @Override
+        public Class getComponentDefinition() {
+          return HostMngrComp.class;
+        }
+
+        @Override
+        public HostMngrComp.Init getComponentInit() {
+          return new HostMngrComp.Init(selfAdr, ScenarioSetup.bootstrapServer, ScenarioSetup.croupierOId);
+        }
+
+        @Override
+        public Map<String, Object> initConfigUpdate() {
+          Map<String, Object> nodeConfig = new HashMap<>();
+          nodeConfig.put("system.id", nodeId);
+          nodeConfig.put("system.seed", ScenarioSetup.getNodeSeed(nodeId));
+          nodeConfig.put("system.port", ScenarioSetup.appPort);
+          return nodeConfig;
+        }
+      };
+    }
+  };
+
+  static Operation1<KillNodeEvent, Integer> killNodeOp = new Operation1<KillNodeEvent, Integer>() {
+
+    @Override
+    public KillNodeEvent generate(final Integer nodeId) {
+      return new KillNodeEvent() {
+        KAddress selfAdr;
+
+        {
+          String nodeIp = "193.0.0." + nodeId;
+          selfAdr = ScenarioSetup.getNodeAdr(nodeIp, nodeId);
+          LOG.info("Node {} was killed", nodeId);
+        }
+
+        @Override
+        public Address getNodeAddress() {
+          return selfAdr;
+        }
+      };
+    }
+  };
+
+  static Operation1<StartNodeEvent, Integer> startSimClientOp = new Operation1<StartNodeEvent, Integer>() {
+
+    @Override
+    public StartNodeEvent generate(final Integer nodeId) {
+      return new StartNodeEvent() {
+        KAddress selfAdr;
+
+        {
+          String nodeIp = "193.0.1." + nodeId;
+          selfAdr = ScenarioSetup.getNodeAdr(nodeIp, nodeId);
+        }
+
+        @Override
+        public Address getNodeAddress() {
+          return selfAdr;
+        }
+
+        @Override
+        public Class getComponentDefinition() {
+          return SimClient.class;
+        }
+
+        @Override
+        public SimClient.Init getComponentInit() {
+          return new SimClient.Init(selfAdr);
+          //return new HostMngrComp.Init(selfAdr, ScenarioSetup.bootstrapServer, ScenarioSetup.croupierOId);
+        }
+
+        @Override
+        public Map<String, Object> initConfigUpdate() {
+          Map<String, Object> nodeConfig = new HashMap<>();
+          nodeConfig.put("system.id", nodeId);
+          nodeConfig.put("system.seed", ScenarioSetup.getNodeSeed(nodeId));
+          nodeConfig.put("system.port", ScenarioSetup.appPort);
+          return nodeConfig;
+        }
+      };
+    }
+  };
+
+  public static SimulationScenario simpleSim() {
+    SimulationScenario scen = new SimulationScenario() {
+      {
+        StochasticProcess systemSetup = new StochasticProcess() {
+          {
+            eventInterArrivalTime(constant(1000));
+            raise(1, systemSetupOp);
+          }
+        };
+        StochasticProcess startBootstrapServer = new StochasticProcess() {
+          {
+            eventInterArrivalTime(constant(1000));
+            raise(1, startBootstrapServerOp);
+          }
+        };
+        StochasticProcess startPeers = new StochasticProcess() {
+          {
+            eventInterArrivalTime(uniform(1000, 1100));
+            raise(10, startNodeOp, new BasicIntSequentialDistribution(1));
+          }
+        };
+        StochasticProcess startSimClient = new StochasticProcess() {
+          {
+            eventInterArrivalTime(uniform(1000, 1100));
+            raise(1, startSimClientOp, new BasicIntSequentialDistribution(1));
+          }
         };
 
-        return scen;
-    }
+        systemSetup.start();
+        startBootstrapServer.startAfterTerminationOf(1000, systemSetup);
+        startPeers.startAfterTerminationOf(1000, startBootstrapServer);
+        startSimClient.startAfterTerminationOf(10, startPeers);
+        terminateAfterTerminationOf(5000, startSimClient);
+      }
+    };
 
-    public static SimulationScenario simpleKillScenario() {
-        SimulationScenario scen = new SimulationScenario() {
-            {
-                StochasticProcess systemSetup = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(1000));
-                        raise(1, systemSetupOp);
-                    }
-                };
-                StochasticProcess startBootstrapServer = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(1000));
-                        raise(1, startBootstrapServerOp);
-                    }
-                };
-                StochasticProcess startPeers = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(uniform(1000, 1100));
-                        raise(10, startNodeOp, new BasicIntSequentialDistribution(1));
-                    }
-                };
-                StochasticProcess startSimClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(uniform(1000, 1100));
-                        raise(1, startSimClientOp, new BasicIntSequentialDistribution(1));
-                    }
-                };
-                StochasticProcess killPeers = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(uniform(1000, 1100));
-                        raise(1, killNodeOp, new ConstantDistribution<Integer>(Integer.class, 2));
-                    }
-                };
+    return scen;
+  }
 
-                systemSetup.start();
-                startBootstrapServer.startAfterTerminationOf(1000, systemSetup);
-                startPeers.startAfterTerminationOf(1000, startBootstrapServer);
-                startSimClient.startAfterTerminationOf(10, startPeers);
-                killPeers.startAfterTerminationOf(5000, startSimClient);
-                terminateAfterTerminationOf(5000, killPeers);
-            }
+  public static SimulationScenario simpleKillScenario() {
+    SimulationScenario scen = new SimulationScenario() {
+      {
+        StochasticProcess systemSetup = new StochasticProcess() {
+          {
+            eventInterArrivalTime(constant(1000));
+            raise(1, systemSetupOp);
+          }
+        };
+        StochasticProcess startBootstrapServer = new StochasticProcess() {
+          {
+            eventInterArrivalTime(constant(1000));
+            raise(1, startBootstrapServerOp);
+          }
+        };
+        StochasticProcess startPeers = new StochasticProcess() {
+          {
+            eventInterArrivalTime(uniform(1000, 1100));
+            raise(10, startNodeOp, new BasicIntSequentialDistribution(1));
+          }
+        };
+        StochasticProcess startSimClient = new StochasticProcess() {
+          {
+            eventInterArrivalTime(uniform(1000, 1100));
+            raise(1, startSimClientOp, new BasicIntSequentialDistribution(1));
+          }
+        };
+        StochasticProcess killPeers = new StochasticProcess() {
+          {
+            eventInterArrivalTime(uniform(1000, 1100));
+            raise(1, killNodeOp, new ConstantDistribution<Integer>(Integer.class, 2));
+          }
         };
 
-        return scen;
-    }
+        systemSetup.start();
+        startBootstrapServer.startAfterTerminationOf(1000, systemSetup);
+        startPeers.startAfterTerminationOf(1000, startBootstrapServer);
+        startSimClient.startAfterTerminationOf(10, startPeers);
+        killPeers.startAfterTerminationOf(5000, startSimClient);
+        terminateAfterTerminationOf(5000, killPeers);
+      }
+    };
+
+    return scen;
+  }
 }
