@@ -23,6 +23,7 @@ import se.kth.broadcast.*;
 import se.kth.croupier.util.NoView;
 import se.kth.app.AppComp;
 import se.kth.sets.*;
+import se.kth.sets.graphs.TwoPTwoPGraph;
 import se.sics.kompics.Channel;
 import se.sics.kompics.Component;
 import se.sics.kompics.ComponentDefinition;
@@ -40,9 +41,6 @@ import se.sics.ktoolbox.util.identifiable.overlay.OverlayId;
 import se.sics.ktoolbox.util.network.KAddress;
 import se.sics.ktoolbox.util.overlays.view.OverlayViewUpdate;
 import se.sics.ktoolbox.util.overlays.view.OverlayViewUpdatePort;
-
-import javax.sound.sampled.Port;
-import java.util.Set;
 
 /**
  * @author Alex Ormenisan <aaor@kth.se>

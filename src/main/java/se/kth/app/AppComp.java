@@ -26,6 +26,10 @@ import se.kth.broadcast.Broadcast;
 import se.kth.broadcast.CausalOrderReliableBroadcastPort;
 import se.kth.broadcast.Deliver;
 import se.kth.sets.*;
+import se.kth.sets.graphs.AddEdge;
+import se.kth.sets.graphs.AddVertex;
+import se.kth.sets.graphs.RemoveEdge;
+import se.kth.sets.graphs.RemoveVertex;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
@@ -62,6 +66,10 @@ public class AppComp extends ComponentDefinition {
     subscribe(handleTestMsg, net);
     subscribe(handleAddOperation, net);
     subscribe(handleRemoveOperation, net);
+    subscribe(handleAddVertexOperation, net);
+    subscribe(handleRemoveVertexOperation, net);
+    subscribe(handleAddEdgeOperation, net);
+    subscribe(handleRemoveEdgeOperation, net);
   }
 
   Handler handleStart = new Handler<Start>() {
@@ -94,6 +102,38 @@ public class AppComp extends ComponentDefinition {
     public void handle(Remove remove, KContentMsg<?, KHeader<?>, Remove> container) {
       LOG.debug("{} received RemoveOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), remove.getElement());
       trigger(remove, set);
+    }
+  };
+
+  ClassMatchedHandler handleAddVertexOperation = new ClassMatchedHandler<AddVertex, KContentMsg<?, KHeader<?>, AddVertex>>() {
+    @Override
+    public void handle(AddVertex add, KContentMsg<?, KHeader<?>, AddVertex> container) {
+      LOG.debug("{} received AddVertexOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), add.getElement());
+      trigger(add, set);
+    }
+  };
+
+  ClassMatchedHandler handleRemoveVertexOperation = new ClassMatchedHandler<RemoveVertex, KContentMsg<?, KHeader<?>, RemoveVertex>>() {
+    @Override
+    public void handle(RemoveVertex add, KContentMsg<?, KHeader<?>, RemoveVertex> container) {
+      LOG.debug("{} received RemoveVertexOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), add.getElement());
+      trigger(add, set);
+    }
+  };
+
+  ClassMatchedHandler handleAddEdgeOperation = new ClassMatchedHandler<AddEdge, KContentMsg<?, KHeader<?>, AddEdge>>() {
+    @Override
+    public void handle(AddEdge add, KContentMsg<?, KHeader<?>, AddEdge> container) {
+      LOG.debug("{} received AddEdgeOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), add.getElement());
+      trigger(add, set);
+    }
+  };
+
+  ClassMatchedHandler handleRemoveEdgeOperation = new ClassMatchedHandler<RemoveEdge, KContentMsg<?, KHeader<?>, RemoveEdge>>() {
+    @Override
+    public void handle(RemoveEdge add, KContentMsg<?, KHeader<?>, RemoveEdge> container) {
+      LOG.debug("{} received RemoveEdgeOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), add.getElement());
+      trigger(add, set);
     }
   };
 

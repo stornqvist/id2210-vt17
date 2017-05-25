@@ -49,7 +49,20 @@ public class SimLauncher {
   //  SimulationScenario simpleOrSetAddScenario = ScenarioGenSets.simpleOrSetAddScenario();
   //  simpleOrSetAddScenario.simulate(LauncherComp.class);
 
-    SimulationScenario simpleOrSetAddRemoveScenario = ScenarioGenSets.simpleOrSetAddRemoveScenario();
-    simpleOrSetAddRemoveScenario.simulate(LauncherComp.class);
+  //  SimulationScenario simpleOrSetAddRemoveScenario = ScenarioGenSets.simpleOrSetAddRemoveScenario();
+  //  simpleOrSetAddRemoveScenario.simulate(LauncherComp.class);
+
+    /************************TWOPTWOPSET*************************************************************/
+  //  SimulationScenario simple2P2PGraphAddScenario = ScenarioGenSets.simple2P2PGraphAddVertexScenario();
+  //  simple2P2PGraphAddScenario.simulate(LauncherComp.class);
+
+  //  SimulationScenario simple2P2PGraphAddRemoveScenario = ScenarioGenSets.simple2P2PGraphAddRemoveVertexScenario();
+  //  simple2P2PGraphAddRemoveScenario.simulate(LauncherComp.class);
+
+  //  SimulationScenario intermediate2P2PGraphAddRemoveVertexScenario = ScenarioGenSets.intermediate2P2PGraphAddRemoveVertexScenario();
+  //  intermediate2P2PGraphAddRemoveVertexScenario.simulate(LauncherComp.class);
+
+    SimulationScenario intermediate2P2PGraphCompleteScenario = ScenarioGenSets.intermediate2P2PGraphCompleteScenario();
+    intermediate2P2PGraphCompleteScenario.simulate(LauncherComp.class);
   }
 }
