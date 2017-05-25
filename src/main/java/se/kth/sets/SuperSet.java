@@ -50,7 +50,7 @@ public abstract class SuperSet extends ComponentDefinition {
     return true;
   }
 
-  //TODO: This will probably not work, maybe change to classMatchedHandler...
+  //TODO: This will probably work but looks ugly af, maybe change to classMatchedHandler...
   Handler handleAddOperation = new Handler<Add>() {
     @Override
     public void handle(Add add) {

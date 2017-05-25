@@ -2,8 +2,6 @@ package se.kth.sets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.kth.broadcast.Broadcast;
-import se.sics.kompics.Handler;
 import se.sics.ktoolbox.util.network.KAddress;
 
 import java.util.HashSet;

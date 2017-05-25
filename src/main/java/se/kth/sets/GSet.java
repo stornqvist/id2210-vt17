@@ -2,7 +2,6 @@ package se.kth.sets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.kth.app.AppComp;
 import se.sics.ktoolbox.util.network.KAddress;
 
 import java.util.HashSet;
@@ -19,10 +18,6 @@ public class GSet extends SuperSet {
     this.set = new HashSet();
     logPrefix = "<nid:" + init.selfAdr.getId() + ">";
     LOG.info("{}initiating...", logPrefix);
-
-  //  subscribe(handleAddOperation, setPort);
-  //  subscribe(handleRemoveOperation, setPort);
-  //  subscribe(handleLookupOperation, setPort);
   }
 
   // Sets prevent duplicate elements

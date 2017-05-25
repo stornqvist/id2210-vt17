@@ -2,9 +2,6 @@ package se.kth.sets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.sics.kompics.Channel;
-import se.sics.kompics.Component;
-import se.sics.kompics.Positive;
 import se.sics.ktoolbox.util.network.KAddress;
 
 import java.util.HashSet;
@@ -18,12 +15,6 @@ public class TwoPSet extends SuperSet {
   private static final Logger LOG = LoggerFactory.getLogger(TwoPSet.class);
   private String logPrefix = " ";
 
-  //Positive<SetPort> gSetPort = requires(SetPort.class);
-  //Positive<SetPort> tombstoneSetPort = requires(SetPort.class);
-
-  //private Component set;
-  //private Component tombstoneSet;
-
   public TwoPSet(Init init) {
     super();
     set = new HashSet();
@@ -31,11 +22,6 @@ public class TwoPSet extends SuperSet {
 
     logPrefix = "<nid:" + init.selfAdr.getId() + ">";
     LOG.info("{}initiating...", logPrefix);
-    //this.set = create(GSet.class, new GSet.Init(init.selfAdr));
-    //this.tombstoneSet = create(GSet.class, new GSet.Init(init.selfAdr));
-
-    //connect(set.getNegative(SetPort.class), gSetPort, Channel.TWO_WAY);
-    //connect(tombstoneSet.getNegative(SetPort.class), tombstoneSetPort, Channel.TWO_WAY);
   }
 
   @Override
