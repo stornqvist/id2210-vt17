@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import se.kth.broadcast.*;
 import se.kth.croupier.util.NoView;
 import se.kth.app.AppComp;
+import se.kth.sets.*;
 import se.sics.kompics.Channel;
 import se.sics.kompics.Component;
 import se.sics.kompics.ComponentDefinition;
@@ -41,6 +42,7 @@ import se.sics.ktoolbox.util.overlays.view.OverlayViewUpdate;
 import se.sics.ktoolbox.util.overlays.view.OverlayViewUpdatePort;
 
 import javax.sound.sampled.Port;
+import java.util.Set;
 
 /**
  * @author Alex Ormenisan <aaor@kth.se>
@@ -57,10 +59,13 @@ public class AppMngrComp extends ComponentDefinition {
   private OverlayId croupierId;
   //***************************INTERNAL_STATE*********************************
   private Component appComp;
-  //***************************BROADCASTING*********************************
+  //***************************BROADCASTING***********************************
   private Component gbebComp;
   private Component erbComp;
   private Component corbComp;
+  //***************************SETS*******************************************
+  private Component set;
+  private SetType setType;
   //******************************AUX_STATE***********************************
   private OMngrCroupier.ConnectRequest pendingCroupierConnReq;
   //**************************************************************************
@@ -72,6 +77,7 @@ public class AppMngrComp extends ComponentDefinition {
 
     extPorts = init.extPorts;
     croupierId = init.croupierOId;
+    setType = init.setType;
 
     subscribe(handleStart, control);
     subscribe(handleCroupierConnected, omngrPort);
@@ -93,10 +99,12 @@ public class AppMngrComp extends ComponentDefinition {
       LOG.info("{}overlays connected", logPrefix);
       connectAppComp();
       connectBroadcastComps();
+      connectSetComp(setType);
 
       trigger(Start.event, gbebComp.control());
       trigger(Start.event, erbComp.control());
       trigger(Start.event, corbComp.control());
+      trigger(Start.event, set.control());
 
       trigger(Start.event, appComp.control());
       trigger(new OverlayViewUpdate.Indication<>(croupierId, false, new NoView()), extPorts.viewUpdatePort);
@@ -124,16 +132,45 @@ public class AppMngrComp extends ComponentDefinition {
     connect(appComp.getNegative(CausalOrderReliableBroadcastPort.class), corbComp.getPositive(CausalOrderReliableBroadcastPort.class), Channel.TWO_WAY);
   }
 
+  private void connectSetComp(SetType setType) {
+      switch (setType) {
+        case G_SET:
+          set = create(GSet.class, new GSet.Init(selfAdr));
+          break;
+        case TWOP_SET:
+          set = create(TwoPSet.class, new TwoPSet.Init(selfAdr));
+          break;
+        case OR_SET:
+          set = create(OrSet.class, new OrSet.Init(selfAdr));
+          break;
+        case TWOP_TWOP_GRAPH:
+          set = create(TwoPTwoPGraph.class, new TwoPTwoPGraph.Init(selfAdr));
+          break;
+      }
+
+      connect(set.getNegative(CausalOrderReliableBroadcastPort.class), corbComp.getPositive(CausalOrderReliableBroadcastPort.class), Channel.TWO_WAY);
+      connect(appComp.getNegative(SetPort.class), set.getPositive(SetPort.class), Channel.TWO_WAY);
+  }
+
   public static class Init extends se.sics.kompics.Init<AppMngrComp> {
 
     public final ExtPort extPorts;
     public final KAddress selfAdr;
     public final OverlayId croupierOId;
+    public final SetType setType;
+
+    public Init(ExtPort extPorts, KAddress selfAdr, OverlayId croupierOId, SetType setType) {
+      this.extPorts = extPorts;
+      this.selfAdr = selfAdr;
+      this.croupierOId = croupierOId;
+      this.setType = setType;
+    }
 
     public Init(ExtPort extPorts, KAddress selfAdr, OverlayId croupierOId) {
       this.extPorts = extPorts;
       this.selfAdr = selfAdr;
       this.croupierOId = croupierOId;
+      this.setType = SetType.G_SET;
     }
   }
 

@@ -25,8 +25,7 @@ import se.kth.app.test.TestMsg;
 import se.kth.broadcast.Broadcast;
 import se.kth.broadcast.CausalOrderReliableBroadcastPort;
 import se.kth.broadcast.Deliver;
-import se.kth.sets.Add;
-import se.kth.sets.GSet;
+import se.kth.sets.*;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
@@ -35,8 +34,6 @@ import se.sics.ktoolbox.util.network.KAddress;
 import se.sics.ktoolbox.util.network.KContentMsg;
 import se.sics.ktoolbox.util.network.KHeader;
 
-import java.util.Set;
-
 /**
  * @author Alex Ormenisan <aaor@kth.se>
  */
@@ -44,18 +41,17 @@ public class AppComp extends ComponentDefinition {
 
   private static final Logger LOG = LoggerFactory.getLogger(AppComp.class);
   private String logPrefix = " ";
-  private Set set;
 
   //*******************************CONNECTIONS********************************
   Positive<Timer> timer = requires(Timer.class);
   Positive<Network> net = requires(Network.class);
   Positive<CausalOrderReliableBroadcastPort> corb = requires(CausalOrderReliableBroadcastPort.class);
+  Positive<SetPort> set = requires(SetPort.class);
   //**************************************************************************
   private KAddress selfAdr;
 
   public AppComp(Init init) {
     selfAdr = init.selfAdr;
-    set = new GSet();
     logPrefix = "<nid:" + selfAdr.getId() + ">";
     LOG.info("{}initiating...", logPrefix);
 
@@ -64,7 +60,8 @@ public class AppComp extends ComponentDefinition {
     subscribe(handlePong, net);
     subscribe(handleCRBDeliver, corb);
     subscribe(handleTestMsg, net);
-    //subscribe(handleAddOperation, net);
+    subscribe(handleAddOperation, net);
+    subscribe(handleRemoveOperation, net);
   }
 
   Handler handleStart = new Handler<Start>() {
@@ -83,7 +80,22 @@ public class AppComp extends ComponentDefinition {
     }
   };
 
+  ClassMatchedHandler handleAddOperation = new ClassMatchedHandler<Add, KContentMsg<?, KHeader<?>, Add>>() {
+    @Override
+    public void handle(Add add, KContentMsg<?, KHeader<?>, Add> container) {
+      //TODO: Handle this in some proper manner
+      LOG.debug("{} received AddOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), add.getElement());
+      trigger(add, set);
+    }
+  };
 
+  ClassMatchedHandler handleRemoveOperation = new ClassMatchedHandler<Remove, KContentMsg<?, KHeader<?>, Remove>>() {
+    @Override
+    public void handle(Remove remove, KContentMsg<?, KHeader<?>, Remove> container) {
+      LOG.debug("{} received RemoveOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), remove.getElement());
+      trigger(remove, set);
+    }
+  };
 
   Handler handleCRBDeliver = new Handler<Deliver>() {
     @Override

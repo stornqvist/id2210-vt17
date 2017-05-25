@@ -20,6 +20,7 @@ package se.kth.system;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.kth.app.mngr.AppMngrComp;
+import se.kth.sets.SetType;
 import se.sics.kompics.Channel;
 import se.sics.kompics.Component;
 import se.sics.kompics.ComponentDefinition;
@@ -53,6 +54,7 @@ public class HostMngrComp extends ComponentDefinition {
   private KAddress selfAdr;
   private KAddress bootstrapServer;
   private OverlayId croupierId;
+  private SetType setType;
   //***************************INTERNAL_STATE*********************************
   private Component bootstrapClientComp;
   private Component overlayMngrComp;
@@ -65,6 +67,7 @@ public class HostMngrComp extends ComponentDefinition {
 
     bootstrapServer = init.bootstrapServer;
     croupierId = init.croupierId;
+    setType = init.setType;
 
     subscribe(handleStart, control);
 
@@ -95,7 +98,7 @@ public class HostMngrComp extends ComponentDefinition {
   private void connectApp() {
     AppMngrComp.ExtPort extPorts = new AppMngrComp.ExtPort(timerPort, networkPort,
       overlayMngrComp.getPositive(CroupierPort.class), overlayMngrComp.getNegative(OverlayViewUpdatePort.class));
-    appMngrComp = create(AppMngrComp.class, new AppMngrComp.Init(extPorts, selfAdr, croupierId));
+    appMngrComp = create(AppMngrComp.class, new AppMngrComp.Init(extPorts, selfAdr, croupierId, setType));
     connect(appMngrComp.getNegative(OverlayMngrPort.class), overlayMngrComp.getPositive(OverlayMngrPort.class),
       Channel.TWO_WAY);
   }
@@ -105,11 +108,20 @@ public class HostMngrComp extends ComponentDefinition {
     public final KAddress selfAdr;
     public final KAddress bootstrapServer;
     public final OverlayId croupierId;
+    public final SetType setType;
+
+    public Init(KAddress selfAdr, KAddress bootstrapServer, OverlayId croupierId, SetType setType) {
+      this.selfAdr = selfAdr;
+      this.bootstrapServer = bootstrapServer;
+      this.croupierId = croupierId;
+      this.setType = setType;
+    }
 
     public Init(KAddress selfAdr, KAddress bootstrapServer, OverlayId croupierId) {
       this.selfAdr = selfAdr;
       this.bootstrapServer = bootstrapServer;
       this.croupierId = croupierId;
+      this.setType = SetType.G_SET; // Default is GSet
     }
   }
 }

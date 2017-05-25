@@ -24,12 +24,32 @@ import se.sics.kompics.simulator.run.LauncherComp;
  * @author Alex Ormenisan <aaor@kth.se>
  */
 public class SimLauncher {
+  // TODO: Add so that you can specify specific simulation scenarios
   public static void main(String[] args) {
     SimulationScenario.setSeed(ScenarioSetup.scenarioSeed);
-    SimulationScenario simpleBootScenario = ScenarioGen.simpleSim();
-    simpleBootScenario.simulate(LauncherComp.class);
 
-    SimulationScenario simpleKillScenario = ScenarioGen.simpleKillScenario();
-    simpleKillScenario.simulate(LauncherComp.class);
+    /************************GSET*************************************************************/
+  //  SimulationScenario simpleBootScenario = ScenarioGen.simpleSim();
+  //  simpleBootScenario.simulate(LauncherComp.class);
+
+  //  SimulationScenario simpleKillScenario = ScenarioGen.simpleKillScenario();
+  //  simpleKillScenario.simulate(LauncherComp.class);
+
+  //  SimulationScenario simpleAddScenario = ScenarioGenSets.simpleGSetAddScenario();
+  //  simpleAddScenario.simulate(LauncherComp.class);
+
+    /************************TWOPSET*************************************************************/
+  //  SimulationScenario simpleTwoPSetAddScenario = ScenarioGenSets.simple2PSetAddScenario();
+  //  simpleTwoPSetAddScenario.simulate(LauncherComp.class);
+
+  //  SimulationScenario simpleTwoPSetRemoveScenario = ScenarioGenSets.simple2PSetAddRemoveScenario();
+  //  simpleTwoPSetRemoveScenario.simulate(LauncherComp.class);
+
+    /************************ORSET*************************************************************/
+  //  SimulationScenario simpleOrSetAddScenario = ScenarioGenSets.simpleOrSetAddScenario();
+  //  simpleOrSetAddScenario.simulate(LauncherComp.class);
+
+    SimulationScenario simpleOrSetAddRemoveScenario = ScenarioGenSets.simpleOrSetAddRemoveScenario();
+    simpleOrSetAddRemoveScenario.simulate(LauncherComp.class);
   }
 }

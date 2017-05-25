@@ -22,12 +22,14 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.kth.sets.SetType;
 import se.kth.sim.compatibility.SimNodeIdExtractor;
 import se.kth.system.HostMngrComp;
 import se.sics.kompics.network.Address;
 import se.sics.kompics.simulator.SimulationScenario;
 import se.sics.kompics.simulator.adaptor.Operation;
 import se.sics.kompics.simulator.adaptor.Operation1;
+import se.sics.kompics.simulator.adaptor.Operation2;
 import se.sics.kompics.simulator.adaptor.distributions.ConstantDistribution;
 import se.sics.kompics.simulator.adaptor.distributions.extra.BasicIntSequentialDistribution;
 import se.sics.kompics.simulator.events.system.KillNodeEvent;
@@ -124,6 +126,46 @@ public class ScenarioGen {
     }
   };
 
+  static Operation2<StartNodeEvent, Integer, Integer> startNode2Op = new Operation2<StartNodeEvent, Integer, Integer>() {
+
+    @Override
+    public StartNodeEvent generate(final Integer nodeId, final Integer setId) {
+      return new StartNodeEvent() {
+        KAddress selfAdr;
+        SetType setType;
+        {
+          String nodeIp = "193.0.0." + nodeId;
+          setType = SetType.valueOf(setId);
+          selfAdr = ScenarioSetup.getNodeAdr(nodeIp, nodeId);
+        }
+
+        @Override
+        public Address getNodeAddress() {
+          return selfAdr;
+        }
+
+        @Override
+        public Class getComponentDefinition() {
+          return HostMngrComp.class;
+        }
+
+        @Override
+        public HostMngrComp.Init getComponentInit() {
+          return new HostMngrComp.Init(selfAdr, ScenarioSetup.bootstrapServer, ScenarioSetup.croupierOId, setType);
+        }
+
+        @Override
+        public Map<String, Object> initConfigUpdate() {
+          Map<String, Object> nodeConfig = new HashMap<>();
+          nodeConfig.put("system.id", nodeId);
+          nodeConfig.put("system.seed", ScenarioSetup.getNodeSeed(nodeId));
+          nodeConfig.put("system.port", ScenarioSetup.appPort);
+          return nodeConfig;
+        }
+      };
+    }
+  };
+
   static Operation1<KillNodeEvent, Integer> killNodeOp = new Operation1<KillNodeEvent, Integer>() {
 
     @Override
@@ -164,13 +206,12 @@ public class ScenarioGen {
 
         @Override
         public Class getComponentDefinition() {
-          return SimClient.class;
+          return SimClientInfrastructure.class;
         }
 
         @Override
-        public SimClient.Init getComponentInit() {
-          return new SimClient.Init(selfAdr);
-          //return new HostMngrComp.Init(selfAdr, ScenarioSetup.bootstrapServer, ScenarioSetup.croupierOId);
+        public SimClientInfrastructure.Init getComponentInit() {
+          return new SimClientInfrastructure.Init(selfAdr);
         }
 
         @Override

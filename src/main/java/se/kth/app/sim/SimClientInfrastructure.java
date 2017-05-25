@@ -2,10 +2,10 @@ package se.kth.app.sim;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.kth.app.test.Ping;
 import se.kth.app.test.TestMsg;
-import se.kth.broadcast.Broadcast;
 import se.kth.broadcast.Deliver;
+import se.kth.sets.Add;
+import se.kth.sets.Remove;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.network.Transport;
@@ -20,9 +20,9 @@ import se.sics.ktoolbox.util.network.basic.BasicHeader;
 
 //TODO: Separate this client from the broadcasting procedures. Instead utiilise some network operations such as add, rm etc.
 
-public class SimClient extends ComponentDefinition {
+public class SimClientInfrastructure extends ComponentDefinition {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SimClient.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SimClientInfrastructure.class);
   private String logPrefix = " ";
 
   //*******************************CONNECTIONS********************************
@@ -33,7 +33,7 @@ public class SimClient extends ComponentDefinition {
   //**************************************************************************
   private KAddress selfAdr;
 
-  public SimClient(Init init) {
+  public SimClientInfrastructure(Init init) {
     selfAdr = init.selfAdr;
     logPrefix = "<nid:" + selfAdr.getId() + ">";
     LOG.info("{}initiating...", logPrefix);
@@ -51,7 +51,6 @@ public class SimClient extends ComponentDefinition {
       KContentMsg msg = new BasicContentMsg(header, new TestMsg("Hello World"));
       LOG.info("Sending msg {}", "Hello World");
       trigger(msg, net);
-      //trigger(new Broadcast(new TestMsg("Hello World")), crb);
     }
   };
 
@@ -62,7 +61,21 @@ public class SimClient extends ComponentDefinition {
     }
   };
 
-  public static class Init extends se.sics.kompics.Init<SimClient> {
+  private void sendAddOperation(Object element, KAddress initialPeer) {
+    Add addOperation = new Add(element);
+    KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
+    KContentMsg msg = new BasicContentMsg(header, addOperation);
+    trigger(msg, net);
+  }
+
+  private void sendRemoveOperation(Object element, KAddress initialPeer) {
+    Remove removeOperation = new Remove(element);
+    KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
+    KContentMsg msg = new BasicContentMsg(header, removeOperation);
+    trigger(msg, net);
+  }
+
+  public static class Init extends se.sics.kompics.Init<SimClientInfrastructure> {
 
     public final KAddress selfAdr;
 
