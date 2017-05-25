@@ -1,4 +1,4 @@
-package se.kth.sets;
+package se.kth.sets.graphs;
 
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
@@ -6,6 +6,10 @@ import org.slf4j.LoggerFactory;
 import se.kth.broadcast.Broadcast;
 import se.kth.broadcast.CausalOrderReliableBroadcastPort;
 import se.kth.broadcast.Deliver;
+import se.kth.sets.Add;
+import se.kth.sets.Lookup;
+import se.kth.sets.Remove;
+import se.kth.sets.SetPort;
 import se.sics.kompics.*;
 import se.sics.ktoolbox.util.network.KAddress;
 
@@ -15,6 +19,7 @@ import java.util.Set;
 public class TwoPTwoPGraph extends ComponentDefinition {
 
   private static final Logger LOG = LoggerFactory.getLogger(TwoPTwoPGraph.class);
+  private String logPrefix = " ";
 
   Positive<CausalOrderReliableBroadcastPort> corbPort = requires(CausalOrderReliableBroadcastPort.class);
   Negative<SetPort> setPort = provides(SetPort.class);
@@ -22,7 +27,10 @@ public class TwoPTwoPGraph extends ComponentDefinition {
   Set<Vertex> va, vr;
   Set<Edge> ea, er;
 
-  public TwoPTwoPGraph() {
+  public TwoPTwoPGraph(Init init) {
+    logPrefix = "<nid:" + init.selfAdr.getId() + ">";
+    LOG.info("{}initiating...", logPrefix);
+
     va = new HashSet();
     vr = new HashSet();
     ea = new HashSet();
@@ -32,7 +40,6 @@ public class TwoPTwoPGraph extends ComponentDefinition {
     subscribe(handleRemoveOperation, setPort);
     subscribe(handleLookupOperation, setPort);
     subscribe(handleDeliver, corbPort);
-    //TODO: Copy some stuff from SuperSet
   }
 
   void broadcast(KompicsEvent event) {
@@ -70,10 +77,22 @@ public class TwoPTwoPGraph extends ComponentDefinition {
 
   public void removeVertexAtSource(Vertex vertex) {
     if(lookup(vertex)){
+      // In case there aren't any edges
+      if (Sets.difference(ea, er).isEmpty()) {
+        vr.add(vertex);
+        broadcast(new RemoveVertex(vertex));
+        return;
+      }
       for(Edge edge : Sets.difference(ea, er)) {
         if(!edge.u.equals(vertex) && !edge.v.equals(vertex)) {
-          //TODO: Remove edge
           vr.add(vertex);
+          broadcast(new RemoveVertex(vertex));
+
+          // Giving precedence to RemoveVertex over AddEdge
+        } else {
+          removeEdgeAtSource(edge);
+          vr.add(vertex);
+          broadcast(new RemoveVertex(vertex));
         }
       }
     }
@@ -82,12 +101,20 @@ public class TwoPTwoPGraph extends ComponentDefinition {
   public void removeVertex(Vertex vertex) {
     if (va.contains(vertex) && !vr.contains(vertex)) {
       vr.add(vertex);
+
+      // Giving precedence to RemoveVertex over AddEdge
+      for (Edge edge : Sets.difference(ea, er)) {
+        if (edge.u.equals(vertex) || edge.v.equals(vertex)) {
+          removeEdgeAtSource(edge);
+        }
+      }
     }
   }
 
   public void removeEdgeAtSource(Edge edge) {
     if (lookup(edge)) {
       er.add(edge);
+      broadcast(new RemoveEdge(edge));
     }
   }
 
@@ -140,22 +167,23 @@ public class TwoPTwoPGraph extends ComponentDefinition {
   Handler handleDeliver = new Handler<Deliver>() {
     @Override
     public void handle(Deliver deliver) {
-      //This looks ridiculous
+      //This looks even more ridiculous at this point
       if(deliver.payload instanceof AddEdge) {
-        addEdge((Edge) deliver.payload);
+        addEdge((Edge) ((AddEdge) deliver.payload).getElement());
       } else if (deliver.payload instanceof AddVertex) {
-        addVertex((Vertex) deliver.payload);
+        addVertex((Vertex) ((AddVertex) deliver.payload).getElement());
       } else if(deliver.payload instanceof RemoveEdge) {
-        removeEdge((Edge) deliver.payload);
+        removeEdge((Edge) ((RemoveEdge) deliver.payload).getElement());
       } else if(deliver.payload instanceof RemoveVertex) {
-        removeVertex((Vertex) deliver.payload);
+        removeVertex((Vertex) ((RemoveVertex) deliver.payload).getElement());
       }else if(deliver.payload instanceof LookupEdge) {
-        lookup((Edge) deliver.payload);
+        lookup((Edge) ((LookupEdge) deliver.payload).getElement());
       } else if(deliver.payload instanceof LookupVertex) {
-        lookup((Vertex) deliver.payload);
+        lookup((Vertex) ((LookupVertex) deliver.payload).getElement());
       } else {
-        LOG.info("No matching type (type is {}). Something must have went wrong.", deliver.payload);
+        LOG.debug("No matching type (type is {}). Something must have went wrong.", deliver.payload);
       }
+      LOG.debug("The graph now looks something like the following: {}", print());
     }
   };
 
@@ -167,71 +195,36 @@ public class TwoPTwoPGraph extends ComponentDefinition {
       this.selfAdr = selfAdr;
     }
   }
-}
 
-class Vertex {
-  String id;
+  // I wonder why overriding toString() did not work
+  public String print() {
+    StringBuilder sb = new StringBuilder();
 
-  public Vertex(String id) {
-    this.id = id;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (obj instanceof Vertex && obj != null) {
-      return ((Vertex) obj).id.equals(this.id);
+    sb.append("\n Alive vertices: [");
+    for (Vertex vertex : va) {
+      sb.append(vertex.toString());
     }
-    return false;
+    sb.append("]");
+
+    sb.append("\n Removed vertices: [");
+    for (Vertex vertex : vr) {
+      sb.append(vertex.toString());
+    }
+    sb.append("]");
+
+    sb.append("\n Alive edges: [");
+    for (Edge edge : ea) {
+      sb.append(edge.toString());
+    }
+    sb.append("]");
+
+    sb.append("\n Removed edges: [");
+    for (Edge edge : er) {
+      sb.append(edge.toString());
+    }
+    sb.append("]");
+
+    return sb.toString();
   }
 }
 
-class Edge {
-
-  Vertex v;
-  Vertex u;
-
-  public Edge(Vertex v, Vertex u) {
-    this.v = v;
-    this.u = u;
-  }
-}
-
-class AddEdge extends Add {
-
-  public AddEdge(Edge edge) {
-    super(edge);
-  }
-}
-
-class AddVertex extends Add {
-
-  public AddVertex(Vertex vertex) {
-    super(vertex);
-  }
-}
-
-class RemoveEdge extends Remove {
-
-  public RemoveEdge(Edge edge) {
-    super(edge);
-  }
-}
-
-class RemoveVertex extends Remove {
-
-  public RemoveVertex(Vertex vertex) {
-    super(vertex);
-  }
-}
-
-class LookupEdge extends Lookup {
-  public LookupEdge(Edge edge) {
-    super(edge);
-  }
-}
-
-class LookupVertex extends Lookup {
-  public LookupVertex(Edge edge) {
-    super(edge);
-  }
-}
