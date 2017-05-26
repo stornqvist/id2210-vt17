@@ -53,32 +53,25 @@ public class CausalOrderReliableBroadcast extends ComponentDefinition {
       CRB_Broadcast crbBroadcast = new CRB_Broadcast(msg.payload, new LinkedList());
       trigger(new RB_Broadcast(crbBroadcast, past), rb);
       past.add(new CRB_Deliver(selfAdr, msg.payload));
-      //LOG.info("CRB at {} Received broadcast request", selfAdr);
     }
   };
 
-  //TODO: Prevent duplicate sendning of events. There are two causes for this: There is a double trigger
-  // which potentially overlap. Furthermore, there is an issue with encapsulation, since the RB_Deliver
-  // contains CRB_Broadcast which in turn contain the desired KompicsEvent.
   Handler<RB_Deliver> deliverHandler = new Handler<RB_Deliver>() {
     @Override
     public void handle(RB_Deliver deliver) {
-      //LOG.info("Received RB_Deliver containing {}", deliver.payload);
       CRB_Broadcast crbBroadcast = (CRB_Broadcast) deliver.payload;
-      //Broadcast broadcast = (Broadcast) crbBroadcast.payload;
       if (!delivered.contains(crbBroadcast.payload)) {
         for (Deliver d : deliver.past){
           if(!delivered.contains(d.payload)){
             trigger(new CRB_Deliver(d.src, d.payload), crb);
-            //LOG.info("{} is delivering message upwards", selfAdr);
             delivered.add(d.payload);
             if (!past.contains(d)) {
                 past.add(d);
             }
+            return; // returning to avoid duplicate deliver
           }
         }
         trigger(new CRB_Deliver(deliver.src ,crbBroadcast.payload), crb);
-        //LOG.info("{} is delivering message upwards", selfAdr);
         delivered.add(deliver.payload);
         if (!past.contains(deliver)) {
             past.add(deliver);
