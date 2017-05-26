@@ -1,4 +1,4 @@
-package se.kth.sets;
+package se.kth.sets.events;
 
 import se.sics.kompics.KompicsEvent;
 

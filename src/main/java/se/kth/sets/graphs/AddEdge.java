@@ -1,6 +1,6 @@
 package se.kth.sets.graphs;
 
-import se.kth.sets.Add;
+import se.kth.sets.events.Add;
 
 public class AddEdge extends Add {
 

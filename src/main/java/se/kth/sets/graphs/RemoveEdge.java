@@ -1,6 +1,6 @@
 package se.kth.sets.graphs;
 
-import se.kth.sets.Remove;
+import se.kth.sets.events.Remove;
 
 public class RemoveEdge extends Remove {
 

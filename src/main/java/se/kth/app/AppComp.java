@@ -26,6 +26,8 @@ import se.kth.broadcast.Broadcast;
 import se.kth.broadcast.CausalOrderReliableBroadcastPort;
 import se.kth.broadcast.Deliver;
 import se.kth.sets.*;
+import se.kth.sets.events.Add;
+import se.kth.sets.events.Remove;
 import se.kth.sets.graphs.AddEdge;
 import se.kth.sets.graphs.AddVertex;
 import se.kth.sets.graphs.RemoveEdge;

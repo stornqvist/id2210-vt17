@@ -3,8 +3,8 @@ package se.kth.app.sim;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.kth.app.test.SetsScenarioType;
-import se.kth.sets.Add;
-import se.kth.sets.Remove;
+import se.kth.sets.events.Add;
+import se.kth.sets.events.Remove;
 import se.kth.sets.graphs.*;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
@@ -18,8 +18,6 @@ import se.sics.ktoolbox.util.network.KContentMsg;
 import se.sics.ktoolbox.util.network.KHeader;
 import se.sics.ktoolbox.util.network.basic.BasicContentMsg;
 import se.sics.ktoolbox.util.network.basic.BasicHeader;
-
-import java.util.UUID;
 
 public class SimClientSets extends ComponentDefinition {
 

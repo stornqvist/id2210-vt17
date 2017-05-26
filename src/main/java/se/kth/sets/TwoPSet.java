@@ -2,6 +2,8 @@ package se.kth.sets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.kth.sets.events.Operation;
+import se.kth.sets.events.Remove;
 import se.sics.ktoolbox.util.network.KAddress;
 
 import java.util.HashSet;

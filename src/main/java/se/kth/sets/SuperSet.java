@@ -5,6 +5,10 @@ import org.slf4j.LoggerFactory;
 import se.kth.broadcast.Broadcast;
 import se.kth.broadcast.CausalOrderReliableBroadcastPort;
 import se.kth.broadcast.Deliver;
+import se.kth.sets.events.Add;
+import se.kth.sets.events.Lookup;
+import se.kth.sets.events.Operation;
+import se.kth.sets.events.Remove;
 import se.sics.kompics.*;
 
 public abstract class SuperSet extends ComponentDefinition {
@@ -82,7 +86,7 @@ public abstract class SuperSet extends ComponentDefinition {
       } else if(deliver.payload instanceof Lookup) {
         lookup((Lookup) deliver.payload);
       } else {
-        LOG.info("No matching type (type is {}). Something must have went wrong.", deliver.payload);
+        LOG.debug("No matching type (type is {}). Something must have went wrong.", deliver.payload);
       }
     }
   };
