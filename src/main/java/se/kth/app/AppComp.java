@@ -85,7 +85,7 @@ public class AppComp extends ComponentDefinition {
 
     @Override
     public void handle(TestMsg msg, KContentMsg<?, KHeader<?>, TestMsg> container) {
-        LOG.debug("{}received TestMsg from {}, issuing broadcast", logPrefix, container.getHeader().getSource());
+        LOG.debug("{} received TestMsg from {}, issuing broadcast", logPrefix, container.getHeader().getSource());
         trigger(new Broadcast(msg), corb);
     }
   };
@@ -93,7 +93,6 @@ public class AppComp extends ComponentDefinition {
   ClassMatchedHandler handleAddOperation = new ClassMatchedHandler<Add, KContentMsg<?, KHeader<?>, Add>>() {
     @Override
     public void handle(Add add, KContentMsg<?, KHeader<?>, Add> container) {
-      //TODO: Handle this in some proper manner
       LOG.debug("{} received AddOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), add.getElement());
       trigger(add, set);
     }
@@ -109,40 +108,44 @@ public class AppComp extends ComponentDefinition {
 
   ClassMatchedHandler handleAddVertexOperation = new ClassMatchedHandler<AddVertex, KContentMsg<?, KHeader<?>, AddVertex>>() {
     @Override
-    public void handle(AddVertex add, KContentMsg<?, KHeader<?>, AddVertex> container) {
-      LOG.debug("{} received AddVertexOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), add.getElement());
-      trigger(add, set);
+    public void handle(AddVertex addVertex, KContentMsg<?, KHeader<?>, AddVertex> container) {
+      LOG.debug("{} received AddVertexOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), addVertex.getElement());
+      trigger(addVertex, set);
     }
   };
 
   ClassMatchedHandler handleRemoveVertexOperation = new ClassMatchedHandler<RemoveVertex, KContentMsg<?, KHeader<?>, RemoveVertex>>() {
     @Override
-    public void handle(RemoveVertex add, KContentMsg<?, KHeader<?>, RemoveVertex> container) {
-      LOG.debug("{} received RemoveVertexOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), add.getElement());
-      trigger(add, set);
+    public void handle(RemoveVertex removeVertex, KContentMsg<?, KHeader<?>, RemoveVertex> container) {
+      LOG.debug("{} received RemoveVertexOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), removeVertex.getElement());
+      trigger(removeVertex, set);
     }
   };
 
   ClassMatchedHandler handleAddEdgeOperation = new ClassMatchedHandler<AddEdge, KContentMsg<?, KHeader<?>, AddEdge>>() {
     @Override
-    public void handle(AddEdge add, KContentMsg<?, KHeader<?>, AddEdge> container) {
-      LOG.debug("{} received AddEdgeOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), add.getElement());
-      trigger(add, set);
+    public void handle(AddEdge addEdge, KContentMsg<?, KHeader<?>, AddEdge> container) {
+      LOG.debug("{} received AddEdgeOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), addEdge.getElement());
+      trigger(addEdge, set);
     }
   };
 
   ClassMatchedHandler handleRemoveEdgeOperation = new ClassMatchedHandler<RemoveEdge, KContentMsg<?, KHeader<?>, RemoveEdge>>() {
     @Override
-    public void handle(RemoveEdge add, KContentMsg<?, KHeader<?>, RemoveEdge> container) {
-      LOG.debug("{} received RemoveEdgeOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), add.getElement());
-      trigger(add, set);
+    public void handle(RemoveEdge removeEdge, KContentMsg<?, KHeader<?>, RemoveEdge> container) {
+      LOG.debug("{} received RemoveEdgeOperation from {} containing element {}", logPrefix, container.getHeader().getSource(), removeEdge.getElement());
+      trigger(removeEdge, set);
     }
   };
 
   Handler handleCRBDeliver = new Handler<Deliver>() {
     @Override
     public void handle(Deliver deliver) {
-      LOG.debug("{} received {} from {}", logPrefix, deliver.payload, deliver.src);
+      if (deliver.payload instanceof TestMsg) {
+        LOG.debug("{} received {} containing {} from {}", logPrefix, deliver.payload, ((TestMsg) deliver.payload).getMsg(), deliver.src);
+      } else {
+        LOG.trace("{} received {} from {}", logPrefix, deliver.payload, deliver.src);
+      }
     }
   };
 
@@ -151,7 +154,7 @@ public class AppComp extends ComponentDefinition {
 
       @Override
       public void handle(Ping content, KContentMsg<?, ?, Ping> container) {
-        LOG.debug("{}received ping from:{}", logPrefix, container.getHeader().getSource());
+        LOG.debug("{} received ping from:{}", logPrefix, container.getHeader().getSource());
         trigger(container.answer(new Pong()), net);
       }
     };
@@ -161,7 +164,7 @@ public class AppComp extends ComponentDefinition {
 
       @Override
       public void handle(Pong content, KContentMsg<?, KHeader<?>, Pong> container) {
-        LOG.debug("{}received pong from:{}", logPrefix, container.getHeader().getSource());
+        LOG.debug("{} received pong from:{}", logPrefix, container.getHeader().getSource());
       }
     };
 

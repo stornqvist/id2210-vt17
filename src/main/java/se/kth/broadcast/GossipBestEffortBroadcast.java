@@ -1,6 +1,5 @@
 package se.kth.broadcast;
 
-import org.apache.commons.math3.filter.KalmanFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.kth.croupier.util.CroupierHelper;
@@ -63,7 +62,6 @@ public class GossipBestEffortBroadcast extends ComponentDefinition {
     @Override
     public void handle(BEB_Broadcast broadcast) {
       past.add(new BEB_Deliver(broadcast.src, broadcast.payload));
-      //LOG.info("GBEB on {} Received a broadcast request", selfAdr);
     }
   };
 
@@ -87,7 +85,6 @@ public class GossipBestEffortBroadcast extends ComponentDefinition {
   ClassMatchedHandler historyResponseHandler = new ClassMatchedHandler<HistoryResponse, KContentMsg<?, ?, HistoryResponse>>() {
     @Override
     public void handle(HistoryResponse historyResponse, KContentMsg kContentMsg) {
-      //LOG.info("{} received a message from the network (and if this is printed I would be pleased)", selfAdr);
       Set<Deliver> unseen = Sets.difference(historyResponse.history, past);
       for (Deliver deliver : unseen) {
         trigger(deliver, gbeb);

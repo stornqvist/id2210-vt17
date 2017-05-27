@@ -31,7 +31,7 @@ public abstract class SuperSet extends ComponentDefinition {
 
   public boolean add(Operation operation) {
     // TODO: Improve, please
-    LOG.warn("A wild guess but I might have ended up here");
+    LOG.warn("If you ever see this in the logs it could cause some serious headache.");
     return true;
   }
 
@@ -86,7 +86,7 @@ public abstract class SuperSet extends ComponentDefinition {
       } else if(deliver.payload instanceof Lookup) {
         lookup((Lookup) deliver.payload);
       } else {
-        LOG.debug("No matching type (type is {}). Something must have went wrong.", deliver.payload);
+        LOG.trace("No matching type (type is {}). This message is simply not desired.", deliver.payload);
       }
     }
   };

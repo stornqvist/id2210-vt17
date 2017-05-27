@@ -28,7 +28,7 @@ public class OrSet extends SuperSet {
   @Override
   public boolean add(Operation operation) {
     if (operation instanceof OR_Add) {
-      LOG.info("{} {} was added", logPrefix, operation);
+      LOG.debug("{} operation {} is to be executed", logPrefix, operation);
       OR_Add add = (OR_Add) operation;
       return set.add(new Pair(add.uuid, add.getElement()));
     } else {
@@ -39,7 +39,7 @@ public class OrSet extends SuperSet {
 
   @Override
   public boolean addAtSrc(Add operation) {
-    LOG.info("{} {} was added at src", logPrefix, operation);
+    LOG.debug("{}operation {} is to be executed at src", logPrefix, operation);
     Pair pair = new Pair(UUID.randomUUID(), operation.getElement());
     set.add(pair);
     broadcast(new OR_Add(pair.element, pair.uuid));
@@ -48,9 +48,8 @@ public class OrSet extends SuperSet {
 
   @Override
   public boolean remove(Remove operation) {
-    LOG.info("{} {} is maybe being removed", logPrefix, operation.getElement());
     if (operation instanceof OR_Remove) {
-      LOG.info("{} {} is being removed", logPrefix, operation.getElement());
+      LOG.debug("{} operation {} is to be executed on the set", logPrefix, operation);
       OR_Remove remove = (OR_Remove) operation;
       for (UUID uuid : remove.uuid) {
         set.remove(new Pair(uuid, remove.getElement()));
@@ -65,11 +64,8 @@ public class OrSet extends SuperSet {
 
   @Override
   public boolean removeAtSrc(Remove remove) {
-    LOG.info("{} was ordered to execute remove {}", logPrefix, remove);
-    LOG.info("{} is the result of performing lookup on {}", lookup(new Lookup(remove.getElement())), remove.getElement());
-    LOG.info("{} is the inälvor of OrSet", this.toString());
+    LOG.debug("{} was ordered to execute remove {} of {}", logPrefix, remove, remove.getElement());
     if(lookup(new Lookup(remove.getElement()))){
-      LOG.info("{} {} was removed at src", logPrefix, remove.getElement());
       Set<UUID> rmUUID = new HashSet();
       for (Pair pair : set) {
         if (pair.element.equals(remove.getElement())) {
@@ -82,11 +78,10 @@ public class OrSet extends SuperSet {
         sb.append(id.toString());
         sb.append(", ");
       }
-
-      LOG.info("{} {} are the UUID that are to be removed", logPrefix, sb.toString());
       broadcast(new OR_Remove(remove.getElement(), rmUUID));
       return true;
     } else {
+      LOG.debug("{} could not find the item {} that was to be removed", logPrefix, remove.getElement());
       return false;
     }
   }
@@ -161,5 +156,10 @@ class Pair {
     } else {
       return false;
     }
+  }
+
+  @Override
+  public int hashCode() {
+    return uuid.hashCode();
   }
 }

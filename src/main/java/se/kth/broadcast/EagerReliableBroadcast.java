@@ -2,7 +2,6 @@ package se.kth.broadcast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.kth.system.SystemSetup;
 import se.sics.kompics.*;
 import se.sics.ktoolbox.util.network.KAddress;
 
@@ -50,7 +49,6 @@ public class EagerReliableBroadcast extends ComponentDefinition {
     @Override
     public void handle(RB_Broadcast broadcast) {
       trigger(new BEB_Broadcast(broadcast, selfAdr), beb);
-      //LOG.info("RB at {} Received broadcast request", selfAdr);
     }
   };
 
@@ -61,11 +59,10 @@ public class EagerReliableBroadcast extends ComponentDefinition {
         delivered.add(deliver.payload);
         //TODO: Following lines could cause troubles...
         if(!(deliver.payload instanceof RB_Broadcast)){
-          System.out.println("About to cast falsely");
+          LOG.warn("A ReliableBroadcast component has received a message which is not a ReliableBroadcast");
         }
         RB_Broadcast broadcast = (RB_Broadcast) deliver.payload;
         trigger(new RB_Deliver(deliver.src, broadcast.payload, broadcast.past), rb);
-        //LOG.info("{} is delivering message upwards (and broadcasting again)", selfAdr);
         trigger(new BEB_Broadcast(deliver.payload, deliver.src), beb);
       }
     }

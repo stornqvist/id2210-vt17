@@ -21,4 +21,9 @@ public class Deliver implements KompicsEvent {
       return super.equals(obj);
     }
   }
+
+  @Override
+  public int hashCode() {
+    return src.getPort();
+  }
 }
