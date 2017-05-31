@@ -88,9 +88,9 @@ public class TwoPTwoPGraph extends ComponentDefinition {
           vr.add(vertex);
           broadcast(new RemoveVertex(vertex));
 
-          // Giving precedence to RemoveVertex over AddEdge
+        // Giving precedence to RemoveVertex over AddEdge
         } else {
-          removeEdgeAtSource(edge);
+          removeEdge(edge);
           vr.add(vertex);
           broadcast(new RemoveVertex(vertex));
         }
@@ -105,7 +105,7 @@ public class TwoPTwoPGraph extends ComponentDefinition {
       // Giving precedence to RemoveVertex over AddEdge
       for (Edge edge : Sets.difference(ea, er)) {
         if (edge.u.equals(vertex) || edge.v.equals(vertex)) {
-          removeEdgeAtSource(edge);
+          removeEdge(edge);
         }
       }
     }
@@ -183,7 +183,7 @@ public class TwoPTwoPGraph extends ComponentDefinition {
       } else {
         LOG.debug("No matching type (type is {}). Something must have went wrong.", deliver.payload);
       }
-      LOG.debug("The graph now looks something like the following: {}", print());
+      LOG.debug("{} After {} the graph now looks something like the following: {}",logPrefix, deliver.payload, print());
     }
   };
 

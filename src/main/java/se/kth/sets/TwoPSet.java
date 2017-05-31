@@ -30,8 +30,8 @@ public class TwoPSet extends SuperSet {
   public boolean add(Operation operation) {
     //TODO: This results in some uneccassary double checking
     if(!set.contains(operation.getElement()) && !tombstoneSet.contains(operation.getElement())){
-      LOG.info("{} A new element {} was added", logPrefix, operation.getElement().toString());
-      set.add(operation);
+      set.add(operation.getElement());
+      LOG.info("{} A new element {} was added. {}", logPrefix, operation.getElement().toString(), toString());
       broadcast(operation);
       return true;
     }
@@ -40,13 +40,35 @@ public class TwoPSet extends SuperSet {
 
   @Override
   public boolean remove(Remove operation) {
-    if (set.contains(operation)) {
-      LOG.info("{} An element {} was removed", logPrefix, operation.getElement().toString());
-      tombstoneSet.add(operation); //TODO: Adding here will already broadcast the operation (not any longer though)
+    if (set.contains(operation.getElement())) {
+      tombstoneSet.add(operation.getElement()); //TODO: Adding here will already broadcast the operation (not any longer though)
+      LOG.info("{} An element {} was removed. {}", logPrefix, operation.getElement().toString(), toString());
       broadcast(operation);
       return true;
     }
     return false;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("alive={");
+    for (Object obj : set) {
+      sb.append(obj.toString());
+      sb.append(", ");
+    }
+    if (!set.isEmpty()) sb.delete(sb.length() - 2, sb.length());
+    sb.append("}, ");
+
+    sb.append("dead={");
+    for (Object obj : tombstoneSet) {
+      sb.append(obj.toString());
+      sb.append(", ");
+    }
+    if (!tombstoneSet.isEmpty()) sb.delete(sb.length() - 2, sb.length());
+    sb.append("}");
+
+    return sb.toString();
   }
 
   public static class Init extends se.sics.kompics.Init<TwoPSet> {

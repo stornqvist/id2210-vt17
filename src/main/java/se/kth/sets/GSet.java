@@ -26,7 +26,7 @@ public class GSet extends SuperSet {
   @Override
   public boolean add(Operation operation) {
     if(set.add(operation.getElement())){
-      LOG.info("{} A new element {} was added", logPrefix, operation.getElement().toString());
+      LOG.info("{} A new element {} was added. It now looks like: {}", logPrefix, operation.getElement().toString(), toString());
       broadcast(operation);
       return true;
     }
@@ -45,9 +45,13 @@ public class GSet extends SuperSet {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
+    sb.append("{");
     for (Object obj : set) {
       sb.append(obj.toString());
+      sb.append(", ");
     }
+    if (!set.isEmpty()) sb.delete(sb.length() - 2, sb.length());
+    sb.append("}");
     return sb.toString();
   }
 

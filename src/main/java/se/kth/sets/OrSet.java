@@ -9,6 +9,7 @@ import se.kth.sets.events.Remove;
 import se.sics.ktoolbox.util.network.KAddress;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,9 +29,11 @@ public class OrSet extends SuperSet {
   @Override
   public boolean add(Operation operation) {
     if (operation instanceof OR_Add) {
-      LOG.debug("{} operation {} is to be executed", logPrefix, operation);
+      //LOG.debug("{} operation {} is to be executed on {}", logPrefix, operation, toString());
       OR_Add add = (OR_Add) operation;
-      return set.add(new Pair(add.uuid, add.getElement()));
+      set.add(new Pair(add.uuid, add.getElement()));
+      LOG.debug("{} {} operation resulted in {}", logPrefix, operation, toString());
+      return set.contains(new Pair(add.uuid, add.getElement()));
     } else {
       // TODO: Something went wrong, do something
       return false;
@@ -39,21 +42,23 @@ public class OrSet extends SuperSet {
 
   @Override
   public boolean addAtSrc(Add operation) {
-    LOG.debug("{}operation {} is to be executed at src", logPrefix, operation);
+    //LOG.debug("{} operation {} is to be executed on {} at src", logPrefix, operation, toString());
     Pair pair = new Pair(UUID.randomUUID(), operation.getElement());
     set.add(pair);
     broadcast(new OR_Add(pair.element, pair.uuid));
+    LOG.debug("{} {} operation resulted in {}", logPrefix, operation, toString());
     return true;
   }
 
   @Override
   public boolean remove(Remove operation) {
     if (operation instanceof OR_Remove) {
-      LOG.debug("{} operation {} is to be executed on the set", logPrefix, operation);
+      //LOG.debug("{} operation {} is to be executed on {}", logPrefix, operation, toString());
       OR_Remove remove = (OR_Remove) operation;
       for (UUID uuid : remove.uuid) {
         set.remove(new Pair(uuid, remove.getElement()));
       }
+      LOG.debug("{} {} operation resulted in {}", logPrefix, remove, toString());
       return true;
     }
     else {
@@ -64,21 +69,20 @@ public class OrSet extends SuperSet {
 
   @Override
   public boolean removeAtSrc(Remove remove) {
-    LOG.debug("{} was ordered to execute remove {} of {}", logPrefix, remove, remove.getElement());
+    //LOG.debug("{} was ordered to execute remove {} of {} on {}", logPrefix, remove, remove.getElement(), toString());
     if(lookup(new Lookup(remove.getElement()))){
       Set<UUID> rmUUID = new HashSet();
-      for (Pair pair : set) {
+
+      Iterator<Pair> iterator = set.iterator();
+      while (iterator.hasNext()) {
+        Pair pair = iterator.next();
         if (pair.element.equals(remove.getElement())) {
-          set.remove(pair);
           rmUUID.add(pair.uuid);
+          iterator.remove();
         }
       }
-      StringBuilder sb = new StringBuilder();
-      for(UUID id : rmUUID) {
-        sb.append(id.toString());
-        sb.append(", ");
-      }
       broadcast(new OR_Remove(remove.getElement(), rmUUID));
+      LOG.debug("{} {} operation resulted in {}", logPrefix, remove, toString());
       return true;
     } else {
       LOG.debug("{} could not find the item {} that was to be removed", logPrefix, remove.getElement());
@@ -99,10 +103,13 @@ public class OrSet extends SuperSet {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
+    sb.append("{");
     for (Pair pair : set) {
       sb.append(pair.toString());
       sb.append(", ");
     }
+    if (!set.isEmpty()) sb.delete(sb.length() - 2, sb.length());
+    sb.append("}");
     return sb.toString();
   }
 
