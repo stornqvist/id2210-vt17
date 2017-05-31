@@ -61,10 +61,9 @@ public class SimClientSets extends ComponentDefinition {
     public void handle(Start event) {
       LOG.info("{}starting...", logPrefix);
       //TODO: Do not hardcode this, the initIP could be a part of init construct
-      KAddress initialPeer = ScenarioSetup.getNodeAdr("192.0.0.5", 5);
-      String str = new String("Placeholder");
+      KAddress initialPeer = ScenarioSetup.getNodeAdr("192.0.0." + selfAdr.getId(), Integer.parseInt(selfAdr.getId().toString()));
+      String str = new String("Placeholder");// + selfAdr.getId());
       // I wish I was using Scala...
-      LOG.info("{} is the simulation type", type);
       switch (type) {
         case SIMPLE_ADD:
           sendAddOperation(str, initialPeer);
@@ -99,7 +98,7 @@ public class SimClientSets extends ComponentDefinition {
     Add addOperation = new Add(element);
     KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
     KContentMsg msg = new BasicContentMsg(header, addOperation);
-    LOG.info("{} operation is being triggered in about 0.01 ms, approximiatly", element);
+    LOG.info("Operation {} will be triggered on {}", addOperation, initialPeer);
     trigger(msg, net);
   }
 
@@ -107,7 +106,7 @@ public class SimClientSets extends ComponentDefinition {
     Remove removeOperation = new Remove(element);
     KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
     KContentMsg msg = new BasicContentMsg(header, removeOperation);
-    LOG.info("{} operation is being triggered in about 0.01 ms, approximiatly", element);
+    LOG.info("Operation {} will be triggered on {}", removeOperation, initialPeer);
     trigger(msg, net);
   }
 
@@ -115,7 +114,7 @@ public class SimClientSets extends ComponentDefinition {
     AddEdge addOperation = new AddEdge(edge);
     KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
     KContentMsg msg = new BasicContentMsg(header, addOperation);
-    LOG.info(" An {} with {} is being triggered in about 0.01 ms, approximiatly", addOperation, edge);
+    LOG.info("Operation {} will be triggered on {}", addOperation, initialPeer);
     trigger(msg, net);
   }
 
@@ -123,7 +122,7 @@ public class SimClientSets extends ComponentDefinition {
     RemoveEdge removeOperation = new RemoveEdge(edge);
     KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
     KContentMsg msg = new BasicContentMsg(header, removeOperation);
-    LOG.info(" An {} with {} is being triggered in about 0.01 ms, approximiatly", removeOperation, edge);
+    LOG.info("Operation {} will be triggered on {}", removeOperation, initialPeer);
     trigger(msg, net);
   }
 
@@ -131,7 +130,7 @@ public class SimClientSets extends ComponentDefinition {
     AddVertex addOperation = new AddVertex(vertex);
     KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
     KContentMsg msg = new BasicContentMsg(header, addOperation);
-    LOG.info(" An {} with {} is being triggered in about 0.01 ms, approximiatly", addOperation, vertex);
+    LOG.info("Operation {} will be triggered on {}", addOperation, initialPeer);
     trigger(msg, net);
   }
 
@@ -139,7 +138,7 @@ public class SimClientSets extends ComponentDefinition {
     RemoveVertex removeOperation = new RemoveVertex(vertex);
     KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
     KContentMsg msg = new BasicContentMsg(header, removeOperation);
-    LOG.info("{} on {} is being triggered in about 0.01 ms, approximiatly", removeOperation, vertex);
+    LOG.info("Operation {} will be triggered on {}", removeOperation, initialPeer);
     trigger(msg, net);
   }
 

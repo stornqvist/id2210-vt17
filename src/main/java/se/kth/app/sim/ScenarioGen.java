@@ -311,5 +311,57 @@ public class ScenarioGen {
     return scen;
   }
 
+  public static SimulationScenario simpleResurrectScenario() {
+    SimulationScenario scen = new SimulationScenario() {
+      {
+        StochasticProcess systemSetup = new StochasticProcess() {
+          {
+            eventInterArrivalTime(constant(1000));
+            raise(1, systemSetupOp);
+          }
+        };
+        StochasticProcess startBootstrapServer = new StochasticProcess() {
+          {
+            eventInterArrivalTime(constant(1000));
+            raise(1, startBootstrapServerOp);
+          }
+        };
+        StochasticProcess startPeers = new StochasticProcess() {
+          {
+            eventInterArrivalTime(uniform(1000, 1100));
+            raise(10, startNodeOp, new BasicIntSequentialDistribution(1));
+          }
+        };
+        StochasticProcess startSimClient = new StochasticProcess() {
+          {
+            eventInterArrivalTime(uniform(1000, 1100));
+            raise(1, startSimClientOp, new BasicIntSequentialDistribution(2));
+          }
+        };
+        StochasticProcess killPeers = new StochasticProcess() {
+          {
+            eventInterArrivalTime(uniform(1000, 1100));
+            raise(1, killNodeOp, new BasicIntSequentialDistribution(1));
+          }
+        };
+        StochasticProcess resurrectPeer = new StochasticProcess() {
+          {
+            eventInterArrivalTime(uniform(1000, 1100));
+            raise(1, startNodeOp, new BasicIntSequentialDistribution(1));
+          }
+        };
 
+        systemSetup.start();
+        startBootstrapServer.startAfterTerminationOf(1000, systemSetup);
+        startPeers.startAfterTerminationOf(1000, startBootstrapServer);
+        startSimClient.startAfterTerminationOf(10, startPeers);
+        killPeers.startAfterTerminationOf(1000, startSimClient);
+        startSimClient.startAfterTerminationOf(1000, killPeers);
+        resurrectPeer.startAfterTerminationOf(1000, startSimClient);
+        terminateAfterTerminationOf(5000, resurrectPeer);
+      }
+    };
+
+    return scen;
+  }
 }

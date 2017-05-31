@@ -169,7 +169,7 @@ public class ScenarioGenSets extends ScenarioGen {
           {
             eventInterArrivalTime(uniform(1000, 1100));
             raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(1),
-                    new BasicIntSequentialDistribution(1));
+                new ConstantDistribution(Integer.class, 1));
           }
         };
         StochasticProcess startRemoveClient = new StochasticProcess() {
@@ -184,6 +184,7 @@ public class ScenarioGenSets extends ScenarioGen {
         startBootstrapServer.startAfterTerminationOf(1000, systemSetup);
         startPeers.startAfterTerminationOf(1000, startBootstrapServer);
         startAddClient.startAfterTerminationOf(10, startPeers);
+        startAddClient.startAfterTerminationOf(2000, startPeers);
         terminateAfterTerminationOf(5000, startAddClient);
       }
     };
@@ -217,14 +218,14 @@ public class ScenarioGenSets extends ScenarioGen {
           {
             eventInterArrivalTime(uniform(1000, 1100));
             raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(1),
-                    new BasicIntSequentialDistribution(1));
+                new ConstantDistribution(Integer.class, 1));
           }
         };
         StochasticProcess startRemoveClient = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
             raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(1),
-                    new BasicIntSequentialDistribution(2));
+                new ConstantDistribution(Integer.class, 2));
           }
         };
 
@@ -264,24 +265,25 @@ public class ScenarioGenSets extends ScenarioGen {
         StochasticProcess startAddClient = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
-            raise(1, startSimClientSetsWithIdOp, new BasicIntSequentialDistribution(1),
-                    new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(27));
+            raise(1, startSimClientSetsWithIdOp, new ConstantDistribution(Integer.class, 1),
+                new ConstantDistribution(Integer.class, 1), new BasicIntSequentialDistribution(27));
           }
         };
         StochasticProcess startRemoveClient = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
             raise(1, startSimClientSetsWithIdOp, new BasicIntSequentialDistribution(1),
-                    new BasicIntSequentialDistribution(2), new BasicIntSequentialDistribution(27));
+                new ConstantDistribution(Integer.class, 2), new BasicIntSequentialDistribution(27));
           }
         };
 
         systemSetup.start();
         startBootstrapServer.startAfterTerminationOf(1000, systemSetup);
         startPeers.startAfterTerminationOf(1000, startBootstrapServer);
-        startAddClient.startAfterTerminationOf(10, startPeers);
-        startRemoveClient.startAfterTerminationOf(100, startAddClient);
-        terminateAfterTerminationOf(5000, startAddClient);
+        startAddClient.startAfterTerminationOf(1000, startPeers);
+        startRemoveClient.startAfterTerminationOf(2000, startAddClient);
+        startAddClient.startAfterTerminationOf(2000, startRemoveClient);
+        terminateAfterTerminationOf(10000, startRemoveClient);
       }
     };
 
@@ -312,13 +314,13 @@ public class ScenarioGenSets extends ScenarioGen {
         StochasticProcess startAddClient = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
-            raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(1));
+            raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(1), new ConstantDistribution(Integer.class, 1));
           }
         };
         StochasticProcess startRemoveClient = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
-            raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(2));
+            raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(1), new ConstantDistribution(Integer.class, 2));
           }
         };
 
@@ -354,24 +356,31 @@ public class ScenarioGenSets extends ScenarioGen {
             raise(10, startNode2Op, new BasicIntSequentialDistribution(1), new ConstantDistribution(Integer.class, 3));
           }
         };
+        StochasticProcess startAddClients = new StochasticProcess() {
+          {
+            eventInterArrivalTime(uniform(1000, 1100));
+            raise(2, startSimClientSetsOp, new ConstantDistribution(Integer.class, 1), new ConstantDistribution(Integer.class, 1));
+          }
+        };
         StochasticProcess startAddClient = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
-            raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(1));
+            raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(5), new ConstantDistribution(Integer.class, 1));
           }
         };
         StochasticProcess startRemoveClient = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
-            raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(2));
+            raise(1, startSimClientSetsOp, new BasicIntSequentialDistribution(1), new ConstantDistribution(Integer.class, 2));
           }
         };
 
         systemSetup.start();
         startBootstrapServer.startAfterTerminationOf(1000, systemSetup);
         startPeers.startAfterTerminationOf(1000, startBootstrapServer);
-        startAddClient.startAfterTerminationOf(10, startPeers);
-        startRemoveClient.startAfterTerminationOf(100, startAddClient);
+        startAddClients.startAfterTerminationOf(1000, startPeers);
+        startRemoveClient.startAfterTerminationOf(3000, startAddClients);
+        startAddClient.startAfterStartOf(0, startRemoveClient);
         terminateAfterTerminationOf(5000, startAddClient);
       }
     };
@@ -404,14 +413,14 @@ public class ScenarioGenSets extends ScenarioGen {
           {
             eventInterArrivalTime(uniform(1000, 1100));
             raise(1, startSimClientSetsWithIdOp, new BasicIntSequentialDistribution(1),
-                    new BasicIntSequentialDistribution(101), new BasicIntSequentialDistribution(27));
+                new ConstantDistribution(Integer.class, 101), new BasicIntSequentialDistribution(27));
           }
         };
         StochasticProcess startRemoveVertexClient = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
             raise(1, startSimClientSetsWithIdOp, new BasicIntSequentialDistribution(1),
-                    new BasicIntSequentialDistribution(102), new BasicIntSequentialDistribution(27));
+                new ConstantDistribution(Integer.class, 102), new BasicIntSequentialDistribution(27));
           }
         };
 
@@ -451,14 +460,14 @@ public class ScenarioGenSets extends ScenarioGen {
           {
             eventInterArrivalTime(uniform(1000, 1100));
             raise(1, startSimClientSetsWithIdOp, new BasicIntSequentialDistribution(1),
-                    new BasicIntSequentialDistribution(101), new BasicIntSequentialDistribution(27));
+                new ConstantDistribution(Integer.class, 101), new BasicIntSequentialDistribution(27));
           }
         };
         StochasticProcess startRemoveClient = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
             raise(1, startSimClientSetsWithIdOp, new BasicIntSequentialDistribution(1),
-                    new BasicIntSequentialDistribution(102), new BasicIntSequentialDistribution(27));
+                new ConstantDistribution(Integer.class, 102), new BasicIntSequentialDistribution(27));
           }
         };
 
@@ -492,21 +501,21 @@ public class ScenarioGenSets extends ScenarioGen {
         StochasticProcess startPeers = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
-            raise(10, startNode2Op, new BasicIntSequentialDistribution(1), new ConstantDistribution(Integer.class, 4));
+            raise(5, startNode2Op, new BasicIntSequentialDistribution(1), new ConstantDistribution(Integer.class, 4));
           }
         };
         StochasticProcess startAddClient = new StochasticProcess() {
           {
-            eventInterArrivalTime(uniform(1000, 1100));
+            eventInterArrivalTime(constant(10));
             raise(3, startSimClientSetsWithIdOp, new BasicIntSequentialDistribution(1),
-                    new ConstantDistribution(Integer.class, 101), new BasicIntSequentialDistribution(27));
+                new ConstantDistribution(Integer.class, 101), new BasicIntSequentialDistribution(27));
           }
         };
         StochasticProcess startRemoveClient = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
             raise(1, startSimClientSetsWithIdOp, new BasicIntSequentialDistribution(1),
-                    new BasicIntSequentialDistribution(102), new BasicIntSequentialDistribution(27));
+                new ConstantDistribution(Integer.class, 102), new BasicIntSequentialDistribution(27));
           }
         };
 
@@ -515,7 +524,7 @@ public class ScenarioGenSets extends ScenarioGen {
         startPeers.startAfterTerminationOf(1000, startBootstrapServer);
         startAddClient.startAfterTerminationOf(10, startPeers);
         startRemoveClient.startAfterTerminationOf(100, startAddClient);
-        terminateAfterTerminationOf(5000, startAddClient);
+        terminateAfterTerminationOf(5000, startRemoveClient);
       }
     };
 
@@ -540,12 +549,12 @@ public class ScenarioGenSets extends ScenarioGen {
         StochasticProcess startPeers = new StochasticProcess() {
           {
             eventInterArrivalTime(uniform(1000, 1100));
-            raise(10, startNode2Op, new BasicIntSequentialDistribution(1), new ConstantDistribution(Integer.class, 4));
+            raise(5, startNode2Op, new BasicIntSequentialDistribution(1), new ConstantDistribution(Integer.class, 4));
           }
         };
         StochasticProcess startAddVertexClient = new StochasticProcess() {
           {
-            eventInterArrivalTime(uniform(1000, 1100));
+            eventInterArrivalTime(constant(10));
             raise(3, startSimClientSetsWithIdOp, new BasicIntSequentialDistribution(1),
                     new ConstantDistribution(Integer.class, 101), new BasicIntSequentialDistribution(27));
           }
@@ -559,7 +568,7 @@ public class ScenarioGenSets extends ScenarioGen {
         };
         StochasticProcess startAddEdgeClient = new StochasticProcess() {
           {
-            eventInterArrivalTime(uniform(1000, 1100));
+            eventInterArrivalTime(constant(10));
             raise(2, startSimClientEdgeOp, new BasicIntSequentialDistribution(1),
                     new ConstantDistribution(Integer.class, 11), new BasicIntSequentialDistribution(27),
                     new BasicIntSequentialDistribution(28));
@@ -577,10 +586,10 @@ public class ScenarioGenSets extends ScenarioGen {
         systemSetup.start();
         startBootstrapServer.startAfterTerminationOf(1000, systemSetup);
         startPeers.startAfterTerminationOf(1000, startBootstrapServer);
-        startAddVertexClient.startAfterTerminationOf(10, startPeers);
-        startAddEdgeClient.startAfterTerminationOf(10, startAddVertexClient);
-        startRemoveVertexClient.startAfterTerminationOf(100, startAddVertexClient);
-        terminateAfterTerminationOf(5000, startAddVertexClient);
+        startAddVertexClient.startAfterTerminationOf(5000, startPeers);
+        startAddEdgeClient.startAfterTerminationOf(5000, startAddVertexClient);
+        startRemoveVertexClient.startAfterTerminationOf(8000, startAddEdgeClient);
+        terminateAfterTerminationOf(10000, startRemoveVertexClient);
       }
     };
 

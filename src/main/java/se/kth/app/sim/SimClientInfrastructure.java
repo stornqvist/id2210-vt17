@@ -18,7 +18,7 @@ import se.sics.ktoolbox.util.network.KHeader;
 import se.sics.ktoolbox.util.network.basic.BasicContentMsg;
 import se.sics.ktoolbox.util.network.basic.BasicHeader;
 
-//TODO: Separate this client from the broadcasting procedures. Instead utiilise some network operations such as add, rm etc.
+import java.util.UUID;
 
 public class SimClientInfrastructure extends ComponentDefinition {
 
@@ -46,10 +46,11 @@ public class SimClientInfrastructure extends ComponentDefinition {
     @Override
     public void handle(Start event) {
       LOG.info("{}starting...", logPrefix);
+      TestMsg testMsg = new TestMsg(getRandomMessage());
       KAddress initialPeer = ScenarioSetup.getNodeAdr("192.0.0.5", 5);
       KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
-      KContentMsg msg = new BasicContentMsg(header, new TestMsg("Hello World"));
-      LOG.info("Sending msg {}", "Hello World");
+      KContentMsg msg = new BasicContentMsg(header, testMsg);
+      LOG.info("Sending msg {}", testMsg.getMsg());
       trigger(msg, net);
     }
   };
@@ -61,18 +62,8 @@ public class SimClientInfrastructure extends ComponentDefinition {
     }
   };
 
-  private void sendAddOperation(Object element, KAddress initialPeer) {
-    Add addOperation = new Add(element);
-    KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
-    KContentMsg msg = new BasicContentMsg(header, addOperation);
-    trigger(msg, net);
-  }
-
-  private void sendRemoveOperation(Object element, KAddress initialPeer) {
-    Remove removeOperation = new Remove(element);
-    KHeader header = new BasicHeader(selfAdr, initialPeer, Transport.UDP);
-    KContentMsg msg = new BasicContentMsg(header, removeOperation);
-    trigger(msg, net);
+  private String getRandomMessage(){
+    return UUID.randomUUID().toString();
   }
 
   public static class Init extends se.sics.kompics.Init<SimClientInfrastructure> {
